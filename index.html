@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>CI - Police Nationale</title>
+
 <style>
 body {
   margin: 0;
@@ -20,7 +21,7 @@ body {
 }
 
 .box {
-  width: 520px;
+  width: 540px;
   padding: 35px;
   border: 1px solid #2563eb;
   border-radius: 12px;
@@ -33,12 +34,15 @@ body {
   font-size: 28px;
   font-weight: bold;
   color: #3b82f6;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  letter-spacing: 2px;
 }
 
 .line {
   margin: 12px 0;
   color: #dbeafe;
+  opacity: 0;
+  transition: 0.5s;
 }
 
 .loading {
@@ -58,13 +62,16 @@ body {
 
 @keyframes load {
   0% { width: 0%; }
-  30% { width: 35%; }
-  70% { width: 75%; }
+  25% { width: 30%; }
+  50% { width: 60%; }
+  75% { width: 85%; }
   100% { width: 100%; }
 }
 
 #site {
   display: none;
+  background: #030712;
+  min-height: 100vh;
 }
 
 header {
@@ -73,6 +80,7 @@ header {
   text-align: center;
   font-size: 28px;
   font-weight: bold;
+  border-bottom: 2px solid #2563eb;
 }
 
 nav {
@@ -81,6 +89,8 @@ nav {
   gap: 25px;
   background: #1f2937;
   padding: 15px;
+  position: sticky;
+  top: 0;
 }
 
 nav a {
@@ -89,8 +99,14 @@ nav a {
   font-weight: bold;
 }
 
+nav a:hover {
+  color: #3b82f6;
+}
+
 section {
   padding: 45px;
+  max-width: 1000px;
+  margin: auto;
 }
 
 h2 {
@@ -103,6 +119,7 @@ h2 {
   margin: 15px 0;
   border-radius: 10px;
   border-left: 4px solid #2563eb;
+  line-height: 1.6;
 }
 </style>
 </head>
@@ -112,10 +129,12 @@ h2 {
 <div id="login">
   <div class="box">
     <div class="logo">POLICE NATIONALE</div>
-    <div class="line">Connexion en cours...</div>
-    <div class="line">Insertion de la carte professionnelle...</div>
-    <div class="line">Vérification de l’habilitation...</div>
-    <div class="line">Accès autorisé</div>
+
+    <div class="line" id="l1">Connexion au système...</div>
+    <div class="line" id="l2">Lecture de la carte professionnelle...</div>
+    <div class="line" id="l3">Vérification des habilitations...</div>
+    <div class="line" id="l4">Authentification en cours...</div>
+    <div class="line" id="l5">Accès autorisé</div>
 
     <div class="loading">
       <div class="bar"></div>
@@ -151,26 +170,46 @@ h2 {
   <section id="armes">
     <h2>Armement</h2>
     <div class="card">
-      SIG SP2022, PIE, BTD, aérosol de défense, HK UMP9.
+      SIG SP2022<br>
+      PIE<br>
+      BTD<br>
+      Aérosol de défense<br>
+      HK UMP9
     </div>
   </section>
 
   <section id="vehicules">
     <h2>Véhicules</h2>
     <div class="card">
-      Peugeot 308, Peugeot 3008/5008, Renault Trafic, Peugeot Expert, Renault Master.
+      Peugeot 308<br>
+      Peugeot 3008 / 5008<br>
+      Renault Trafic<br>
+      Peugeot Expert<br>
+      Renault Master
     </div>
   </section>
 
   <section id="reglement">
     <h2>Règlement</h2>
     <div class="card">
-      Respect de la hiérarchie, radio obligatoire, usage proportionné de la force, rapport après intervention.
+      Respect de la hiérarchie<br>
+      Radio obligatoire<br>
+      Usage proportionné de la force<br>
+      Habilitation obligatoire pour certains équipements<br>
+      Rapport après intervention
     </div>
   </section>
 </div>
 
 <script>
+const lines = ["l1", "l2", "l3", "l4", "l5"];
+
+lines.forEach((id, index) => {
+  setTimeout(() => {
+    document.getElementById(id).style.opacity = "1";
+  }, index * 900);
+});
+
 setTimeout(() => {
   document.getElementById("login").style.display = "none";
   document.getElementById("site").style.display = "block";
