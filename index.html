@@ -669,10 +669,19 @@ setTimeout(()=>{
 
 <script>
 // ===== GESTION MEMBRES =====
-var membres = [];
+var membres = window.membres || JSON.parse(localStorage.getItem('membres_31ci') || '[]');
 var selectedMembre = null;
 
-function renderMembres() {
+function saveMembres() {
+  window.membres = membres;
+  if (window.saveMembres && window.saveMembres !== saveMembres) {
+    window.saveMembres();
+  } else {
+    localStorage.setItem('membres_31ci', JSON.stringify(membres));
+  }
+}
+
+window.renderMembres = function renderMembres() {
   var list = document.getElementById('membres-list');
   if (!list) return;
   if (membres.length === 0) {
@@ -732,6 +741,7 @@ function confirmerAjout() {
     return;
   }
   membres.push({ grade: grade, nom: nom });
+  saveMembres();
   renderMembres();
   closeModale('modale-add');
 }
@@ -740,6 +750,7 @@ function confirmerRetrait() {
   if (selectedMembre === null) return;
   membres.splice(selectedMembre, 1);
   selectedMembre = null;
+  saveMembres();
   renderMembres();
   closeModale('modale-retire');
 }
@@ -755,5 +766,52 @@ document.addEventListener('click', function(e) {
   }
 });
 </script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDac7Lo4Yi5HtT_9io4KHZA1XHRURmUrBM",
+    authDomain: "ci-presentation-ce258.firebaseapp.com",
+    projectId: "ci-presentation-ce258",
+    storageBucket: "ci-presentation-ce258.firebasestorage.app",
+    messagingSenderId: "351953410010",
+    appId: "1:351953410010:web:8e74f68b381f40955b52e3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const REF = doc(db, "compagnie", "membres");
+
+  // Charger les membres depuis Firestore
+  async function loadMembres() {
+    try {
+      const snap = await getDoc(REF);
+      if (snap.exists()) {
+        window.membres = snap.data().liste || [];
+      } else {
+        window.membres = [];
+      }
+    } catch(e) {
+      window.membres = JSON.parse(localStorage.getItem('membres_31ci') || '[]');
+    }
+    if (typeof window.renderMembres === 'function') window.renderMembres();
+  }
+
+  // Sauvegarder les membres dans Firestore
+  window.saveMembres = async function() {
+    try {
+      await setDoc(REF, { liste: window.membres });
+      localStorage.setItem('membres_31ci', JSON.stringify(window.membres));
+    } catch(e) {
+      localStorage.setItem('membres_31ci', JSON.stringify(window.membres));
+    }
+  };
+
+  // Charger au démarrage
+  window.addEventListener('load', loadMembres);
+</script>
+
 </body>
 </html>
