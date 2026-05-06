@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>31ème CI — Police Nationale</title>
@@ -583,6 +585,22 @@ function openPage(k){
   document.getElementById('main').style.display='none';
   document.getElementById('subpage').style.display='block';
   window.scrollTo(0,0);
+  // Si c'est la page effectif, synchroniser les membres depuis Firebase
+  if(k === 'hierarchie') {
+    if(window._firebaseReady) {
+      membres = window.membres || membres;
+      renderMembres();
+    } else {
+      // Firebase pas encore prêt, retry toutes les 100ms
+      var retry = setInterval(function() {
+        if(window._firebaseReady) {
+          clearInterval(retry);
+          membres = window.membres || [];
+          renderMembres();
+        }
+      }, 100);
+    }
+  }
 }
 function goBack(){
   document.getElementById('subpage').style.display='none';
@@ -772,10 +790,21 @@ document.addEventListener('click', function(e) {
 });
 </script>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+
+
+<script>
+window.addEventListener("load", function() {
+  if (typeof firebase === 'undefined') {
+    console.warn("Firebase non disponible, fallback localStorage");
+    window.membres = JSON.parse(localStorage.getItem('membres_31ci') || '[]');
+    window._firebaseReady = true;
+    if (typeof window.syncMembres === 'function') window.syncMembres();
+    window._firebaseSave = function() {
+      localStorage.setItem('membres_31ci', JSON.stringify(window.membres));
+    };
+    return;
+  }
   const firebaseConfig = {
     apiKey: "AIzaSyDac7Lo4Yi5HtT_9io4KHZA1XHRURmUrBM",
     authDomain: "ci-presentation-ce258.firebaseapp.com",
@@ -784,40 +813,34 @@ document.addEventListener('click', function(e) {
     messagingSenderId: "351953410010",
     appId: "1:351953410010:web:8e74f68b381f40955b52e3"
   };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const REF = db.collection("compagnie").doc("membres");
+  console.log("Firebase chargé");
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const REF = doc(db, "compagnie", "membres");
-
-  // Charger les membres depuis Firestore
-  async function loadMembres() {
+  async function chargerMembres() {
     try {
-      const snap = await getDoc(REF);
-      if (snap.exists()) {
-        window.membres = snap.data().liste || [];
-      } else {
-        window.membres = [];
-      }
+      const snap = await REF.get();
+      window.membres = snap.exists ? (snap.data().liste || []) : [];
     } catch(e) {
+      console.warn("Firebase erreur:", e);
       window.membres = JSON.parse(localStorage.getItem('membres_31ci') || '[]');
     }
-    // Synchroniser la variable locale ET re-render
+    window._firebaseReady = true;
     if (typeof window.syncMembres === 'function') window.syncMembres();
   }
 
-  // Sauvegarder les membres dans Firestore
   window._firebaseSave = async function() {
     try {
-      await setDoc(REF, { liste: window.membres });
+      await REF.set({ liste: window.membres });
       localStorage.setItem('membres_31ci', JSON.stringify(window.membres));
     } catch(e) {
       localStorage.setItem('membres_31ci', JSON.stringify(window.membres));
     }
   };
 
-  // Charger au démarrage
-  window.addEventListener('load', loadMembres);
+  chargerMembres();
+});
 </script>
-
 </body>
 </html>
