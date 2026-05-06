@@ -669,17 +669,22 @@ setTimeout(()=>{
 
 <script>
 // ===== GESTION MEMBRES =====
-var membres = window.membres || JSON.parse(localStorage.getItem('membres_31ci') || '[]');
+var membres = [];
 var selectedMembre = null;
 
 function saveMembres() {
   window.membres = membres;
-  if (window.saveMembres && window.saveMembres !== saveMembres) {
-    window.saveMembres();
+  if (typeof window._firebaseSave === 'function') {
+    window._firebaseSave();
   } else {
     localStorage.setItem('membres_31ci', JSON.stringify(membres));
   }
 }
+
+window.syncMembres = function() {
+  membres = window.membres || [];
+  window.renderMembres();
+};
 
 window.renderMembres = function renderMembres() {
   var list = document.getElementById('membres-list');
@@ -796,11 +801,12 @@ document.addEventListener('click', function(e) {
     } catch(e) {
       window.membres = JSON.parse(localStorage.getItem('membres_31ci') || '[]');
     }
-    if (typeof window.renderMembres === 'function') window.renderMembres();
+    // Synchroniser la variable locale ET re-render
+    if (typeof window.syncMembres === 'function') window.syncMembres();
   }
 
   // Sauvegarder les membres dans Firestore
-  window.saveMembres = async function() {
+  window._firebaseSave = async function() {
     try {
       await setDoc(REF, { liste: window.membres });
       localStorage.setItem('membres_31ci', JSON.stringify(window.membres));
