@@ -115,6 +115,69 @@ nav {
 .nav-btn:hover { color:#fff; }
 .nav-btn:hover::after { left:12px; right:12px; }
 .nav-badge { background: rgba(200,16,46,0.15); border:1px solid rgba(200,16,46,0.3); color:var(--rouge); font-size:9px; padding:4px 10px; border-radius:2px; letter-spacing:2px; font-family:'Share Tech Mono',monospace; }
+.nav-admin-btn {
+  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:2px;
+  padding:4px 10px; border-radius:2px; cursor:pointer; margin-left:8px;
+  border:1px solid rgba(201,168,76,0.4); background:rgba(201,168,76,0.08);
+  color:var(--or); transition:all 0.2s;
+}
+.nav-admin-btn:hover { background:rgba(201,168,76,0.2); border-color:var(--or); }
+.nav-admin-btn.connected { border-color:rgba(46,204,113,0.5); background:rgba(46,204,113,0.1); color:#2ecc71; }
+.nav-admin-btn.connected:hover { background:rgba(46,204,113,0.2); }
+
+/* Admin login overlay */
+#admin-overlay {
+  display:none; position:fixed; inset:0; z-index:9998;
+  background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center;
+}
+#admin-overlay.open { display:flex; }
+.admin-panel {
+  background:var(--gris2); border:1px solid rgba(201,168,76,0.25);
+  border-top:2px solid var(--or); border-radius:4px;
+  padding:40px; width:400px; max-width:90vw; position:relative;
+  box-shadow:0 0 60px rgba(0,0,0,0.8), 0 0 30px rgba(201,168,76,0.05);
+}
+.admin-panel-close {
+  position:absolute; top:16px; right:16px;
+  background:none; border:none; color:var(--texte2);
+  font-size:18px; cursor:pointer; transition:color 0.2s;
+}
+.admin-panel-close:hover { color:#fff; }
+.admin-panel-badge {
+  font-family:'Share Tech Mono',monospace; font-size:9px;
+  letter-spacing:4px; color:var(--or); margin-bottom:20px;
+}
+.admin-panel-title {
+  font-family:'Rajdhani',sans-serif; font-size:26px; font-weight:700;
+  color:#fff; margin-bottom:28px; line-height:1.2;
+}
+.admin-field { margin-bottom:16px; }
+.admin-label {
+  font-family:'Share Tech Mono',monospace; font-size:10px;
+  letter-spacing:2px; color:var(--texte2); margin-bottom:6px;
+}
+.admin-input {
+  width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  border-radius:3px; color:#fff; font-family:'Share Tech Mono',monospace;
+  font-size:13px; padding:10px 14px; outline:none; transition:border-color 0.2s;
+}
+.admin-input:focus { border-color:rgba(201,168,76,0.5); }
+.admin-btn {
+  width:100%; margin-top:8px; padding:12px;
+  background:linear-gradient(135deg,var(--bleu2),#0040b0);
+  border:1px solid rgba(0,47,138,0.6); border-radius:3px;
+  color:#fff; font-family:'Rajdhani',sans-serif; font-size:14px;
+  font-weight:700; letter-spacing:2px; cursor:pointer; transition:all 0.2s;
+}
+.admin-btn:hover { background:linear-gradient(135deg,#0040b0,#0055d0); }
+.admin-error {
+  color:var(--rouge); font-family:'Share Tech Mono',monospace;
+  font-size:11px; margin-top:10px; display:none; letter-spacing:1px;
+}
+/* Gate member buttons */
+.admin-only { display:none !important; }
+body.admin-logged-in .admin-only { display:flex !important; }
 
 /* ============ HERO ============ */
 .hero {
@@ -428,7 +491,10 @@ footer p { font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(1
         <button class="nav-btn" onclick="openPage('armement')">Armement</button>
         <button class="nav-btn" onclick="openPage('missions')">Missions</button>
       </div>
-      <div class="nav-badge">ACCÈS INTERNE</div>
+      <div style="display:flex;align-items:center;gap:0;">
+        <div class="nav-badge">ACCÈS INTERNE</div>
+        <button class="nav-admin-btn" id="nav-admin-btn-main" onclick="openAdminPanel()">ADMIN</button>
+      </div>
     </div>
   </nav>
 
@@ -535,6 +601,9 @@ footer p { font-family:'Share Tech Mono',monospace; font-size:10px; color:rgba(1
         <div><div class="nav-name">31ème CI</div><div class="nav-sub">COMPAGNIE D'INTERVENTION</div></div>
       </div>
       <button class="sub-back" onclick="goBack()">← RETOUR ACCUEIL</button>
+      <div style="display:flex;align-items:center;gap:0;">
+        <button class="nav-admin-btn" id="nav-admin-btn-sub" onclick="openAdminPanel()">ADMIN</button>
+      </div>
     </div>
   </nav>
   <div class="sub-hero">
@@ -561,7 +630,7 @@ const pagesData = {
   "hierarchie": {
     "label": "02 — EFFECTIF",
     "title": "Personnel & commandement",
-    "html": "<p class=\"c-intro\">La 31ème Compagnie d'Intervention est placée sous l'autorité de <strong style=\"color:#fff\">TLS-12-C Julien FABREGUES</strong>, secondé par <strong style=\"color:#fff\">Brigadier Anakin SKYWALKER</strong>. L'ensemble des membres s'engage à respecter cette chaîne de commandement en toutes circonstances.</p><div class=\"c-section\"><div class=\"c-section-title\">Responsable</div><div class=\"rank-row\"><div class=\"rank-badge\">TLS-12-C</div><div class=\"rank-info\"><div class=\"rank-name\">Julien FABREGUES</div><div class=\"rank-role\">Responsable de la Compagnie d'Intervention</div></div></div><div class=\"rank-row\"><div class=\"rank-badge\">BRIGADIER</div><div class=\"rank-info\"><div class=\"rank-name\">Anakin SKYWALKER</div><div class=\"rank-role\">Responsable adjoint de la Compagnie d'Intervention</div></div></div></div><div class=\"c-section\"><div class=\"c-section-title\">Membres de la Compagnie d'Intervention</div><div id=\"membres-list\"><div class=\"rank-row\"><div class=\"rank-badge\" style=\"background:rgba(255,255,255,0.05);color:var(--texte2);font-style:italic;\">—</div><div class=\"rank-info\"><div class=\"rank-name\" style=\"color:var(--texte2);font-style:italic;\">Membres à venir...</div><div class=\"rank-role\">Les membres seront ajoutés prochainement</div></div></div></div></div><div style=\"display:flex;gap:12px;justify-content:flex-end;margin-top:32px;\"><button onclick=\"openAddMembre()\" style=\"padding:10px 22px;border-radius:5px;border:1px solid #2ecc71;background:transparent;color:#2ecc71;font-family:Rajdhani,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;\" onmouseover=\"this.style.background='#2ecc71';this.style.color='#000'\" onmouseout=\"this.style.background='transparent';this.style.color='#2ecc71'\">+ Ajouter un membre</button><button onclick=\"openRetireMembre()\" style=\"padding:10px 22px;border-radius:5px;border:1px solid #c8102e;background:transparent;color:#c8102e;font-family:Rajdhani,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;\" onmouseover=\"this.style.background='#c8102e';this.style.color='#fff'\" onmouseout=\"this.style.background='transparent';this.style.color='#c8102e'\">− Retirer un membre</button></div>"
+    "html": "<p class=\"c-intro\">La 31ème Compagnie d'Intervention est placée sous l'autorité de <strong style=\"color:#fff\">TLS-12-C Julien FABREGUES</strong>, secondé par <strong style=\"color:#fff\">Brigadier Anakin SKYWALKER</strong>. L'ensemble des membres s'engage à respecter cette chaîne de commandement en toutes circonstances.</p><div class=\"c-section\"><div class=\"c-section-title\">Responsable</div><div class=\"rank-row\"><div class=\"rank-badge\">TLS-12-C</div><div class=\"rank-info\"><div class=\"rank-name\">Julien FABREGUES</div><div class=\"rank-role\">Responsable de la Compagnie d'Intervention</div></div></div><div class=\"rank-row\"><div class=\"rank-badge\">BRIGADIER</div><div class=\"rank-info\"><div class=\"rank-name\">Anakin SKYWALKER</div><div class=\"rank-role\">Responsable adjoint de la Compagnie d'Intervention</div></div></div></div><div class=\"c-section\"><div class=\"c-section-title\">Membres de la Compagnie d'Intervention</div><div id=\"membres-list\"><div class=\"rank-row\"><div class=\"rank-badge\" style=\"background:rgba(255,255,255,0.05);color:var(--texte2);font-style:italic;\">—</div><div class=\"rank-info\"><div class=\"rank-name\" style=\"color:var(--texte2);font-style:italic;\">Membres à venir...</div><div class=\"rank-role\">Les membres seront ajoutés prochainement</div></div></div></div></div><div class=\"admin-only\" style=\"gap:12px;justify-content:flex-end;margin-top:32px;\"><button onclick=\"openAddMembre()\" style=\"padding:10px 22px;border-radius:5px;border:1px solid #2ecc71;background:transparent;color:#2ecc71;font-family:Rajdhani,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;\" onmouseover=\"this.style.background='#2ecc71';this.style.color='#000'\" onmouseout=\"this.style.background='transparent';this.style.color='#2ecc71'\">+ Ajouter un membre</button><button onclick=\"openRetireMembre()\" style=\"padding:10px 22px;border-radius:5px;border:1px solid #c8102e;background:transparent;color:#c8102e;font-family:Rajdhani,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;\" onmouseover=\"this.style.background='#c8102e';this.style.color='#fff'\" onmouseout=\"this.style.background='transparent';this.style.color='#c8102e'\">− Retirer un membre</button></div>"
   },
   "armement": {
     "label": "03 — ARMEMENT",
@@ -651,6 +720,34 @@ setTimeout(()=>{
 
 </script>
 
+<!-- ADMIN LOGIN OVERLAY -->
+<div id="admin-overlay">
+  <div class="admin-panel">
+    <button class="admin-panel-close" onclick="closeAdminPanel()">✕</button>
+    <div class="admin-panel-badge">▸ ACCÈS RESTREINT — PERSONNEL AUTORISÉ</div>
+    <div class="admin-panel-title">Panneau<br>Administrateur</div>
+    <div id="admin-login-form">
+      <div class="admin-field">
+        <div class="admin-label">IDENTIFIANT</div>
+        <input class="admin-input" type="text" id="admin-id" placeholder="Identifiant" autocomplete="off">
+      </div>
+      <div class="admin-field">
+        <div class="admin-label">MOT DE PASSE</div>
+        <input class="admin-input" type="password" id="admin-pw" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')loginAdmin()">
+      </div>
+      <button class="admin-btn" onclick="loginAdmin()">CONNEXION</button>
+      <div class="admin-error" id="admin-error">Identifiants incorrects. Accès refusé.</div>
+    </div>
+    <div id="admin-logged-panel" style="display:none;">
+      <div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.25);border-radius:3px;padding:16px;margin-bottom:20px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#2ecc71;letter-spacing:2px;margin-bottom:6px;">● CONNECTÉ</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:14px;color:var(--texte2);">Accès administrateur actif — vous pouvez gérer les membres dans la section Effectif.</div>
+      </div>
+      <button class="admin-btn" style="background:linear-gradient(135deg,rgba(200,16,46,0.3),rgba(200,16,46,0.5));border-color:rgba(200,16,46,0.5);" onclick="logoutAdmin()">SE DÉCONNECTER</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODALE AJOUT MEMBRE -->
 <div class="modale-overlay" id="modale-add">
   <div class="modale-box">
@@ -686,7 +783,67 @@ setTimeout(()=>{
 </div>
 
 <script>
-// ===== GESTION MEMBRES =====
+// ===== ADMIN AUTH =====
+var isAdmin = false;
+var ADMIN_ID = '4453454';
+var ADMIN_PW = 'CI12PP';
+
+function openAdminPanel() {
+  var overlay = document.getElementById('admin-overlay');
+  overlay.classList.add('open');
+  if (isAdmin) {
+    document.getElementById('admin-login-form').style.display = 'none';
+    document.getElementById('admin-logged-panel').style.display = 'block';
+  } else {
+    document.getElementById('admin-login-form').style.display = 'block';
+    document.getElementById('admin-logged-panel').style.display = 'none';
+    document.getElementById('admin-id').value = '';
+    document.getElementById('admin-pw').value = '';
+    document.getElementById('admin-error').style.display = 'none';
+    setTimeout(function(){ document.getElementById('admin-id').focus(); }, 100);
+  }
+}
+
+function closeAdminPanel() {
+  document.getElementById('admin-overlay').classList.remove('open');
+}
+
+function loginAdmin() {
+  var id = document.getElementById('admin-id').value.trim();
+  var pw = document.getElementById('admin-pw').value;
+  if (id === ADMIN_ID && pw === ADMIN_PW) {
+    isAdmin = true;
+    document.body.classList.add('admin-logged-in');
+    // Update all admin buttons
+    document.querySelectorAll('.nav-admin-btn').forEach(function(b) {
+      b.textContent = '● ADMIN';
+      b.classList.add('connected');
+    });
+    document.getElementById('admin-login-form').style.display = 'none';
+    document.getElementById('admin-logged-panel').style.display = 'block';
+  } else {
+    document.getElementById('admin-error').style.display = 'block';
+    document.getElementById('admin-pw').value = '';
+    document.getElementById('admin-pw').focus();
+  }
+}
+
+function logoutAdmin() {
+  isAdmin = false;
+  document.body.classList.remove('admin-logged-in');
+  document.querySelectorAll('.nav-admin-btn').forEach(function(b) {
+    b.textContent = 'ADMIN';
+    b.classList.remove('connected');
+  });
+  closeAdminPanel();
+}
+
+// Close admin overlay on outside click
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'admin-overlay') closeAdminPanel();
+});
+
+
 var membres = [];
 var selectedMembre = null;
 
